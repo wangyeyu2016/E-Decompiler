@@ -1,3 +1,32 @@
+# IDA7.5支持中文函数命名的办法
+
+https://www.52pojie.cn/thread-1414525-1-1.html
+
+## 解除函数名称的限制
+
+默认配置情况下我们是不能将函数名称修改为中文的，会提示bad character，意思就是包含非法字符，那么怎样让中文成为合法的字符呢？
+
+通过在网上查找资料，这个合法字符的定义在ida.cfg文件中，我们定位到文件，搜索Block_CJK_Unified_Ideographs，如下图所示:
+
+ ```
+// the following characters are allowed in user-defined names:
+NameChars =
+        "$?@"           // asm specific character
+        "_0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz",
+        // This would enable common Chinese characters in identifiers:
+        // Block_CJK_Unified_Ideographs,
+        CURRENT_CULTURE;
+```
+我们去掉Block_CJK_Unified_Ideographs这一行前面的注释，就可以给函数名字起中文了。
+
+解除IDA反汇编代码限制
+虽然通过上述操作函数可以起名为中文，但是实际上使用F5功能的时候，得到的伪代码，中文函数名称却会变成下划线，如下图所示:
+
+
+通过对IDA进行逆向得知，原来hexray在生成伪代码的时候会调用一个calc_c_cpp_name函数，该函数会试图针对C/C++的函数名称进行优化，结果却误伤中文字符，我们将此处代码给NOP掉，就可以了。
+
 # E-Decompiler
 
 用来辅助分析易语言程序的IDA 7.5插件，实验性项目。
