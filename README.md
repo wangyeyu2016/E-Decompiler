@@ -22,10 +22,35 @@ NameChars =
 我们去掉Block_CJK_Unified_Ideographs这一行前面的注释，就可以给函数名字起中文了。
 
 解除IDA反汇编代码限制
-虽然通过上述操作函数可以起名为中文，但是实际上使用F5功能的时候，得到的伪代码，中文函数名称却会变成下划线，如下图所示:
+虽然通过上述操作函数可以起名为中文，但是实际上使用F5功能的时候，得到的伪代码，中文函数名称却会变成下划线:
 
 
 通过对IDA进行逆向得知，原来hexray在生成伪代码的时候会调用一个calc_c_cpp_name函数，该函数会试图针对C/C++的函数名称进行优化，结果却误伤中文字符，我们将此处代码给NOP掉，就可以了。
+
+###
+修改ida.dll中的calc_c_cpp_name
+nop掉下面的`*v10 = '_';`
+```
+if ( !v8 || !strchr(" [](),*&", v11) )
+      {
+        if ( v10 - v9 < 8 || strncmp(v10 - 8, "operator", 8ui64) )
+        {
+LABEL_23:
+          *v10 = '_';
+          goto LABEL_24;
+        }
+        if ( strchr(" +-*/%&!^", v11) )
+          goto LABEL_24;
+        if ( v11 == 40 )
+        {
+          v13 = v10 + 1;
+          if ( v10[1] != 41 )
+            goto LABEL_23;
+        }
+```
+Edit -> Patch Program -> Assemble
+`mov     byte ptr [rbx], 5Fh` -> `nop` -> `nop` -> `nop`
+Edit -> Patch Program -> Apply patches to input file...
 
 # E-Decompiler
 
